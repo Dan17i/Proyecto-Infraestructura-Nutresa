@@ -33,3 +33,40 @@ La red está diseñada en **Cisco Packet Tracer** con un enfoque de segmentació
 ├── infraestructura/    # Dockerfiles y archivos docker-compose.yml.
 ├── scripts/            # Automatización en Bash (Backup, Monitoreo, Deploy).
 └── seguridad/          # Reglas de Firewall (UFW) y políticas de permisos.
+```
+## 🚀 Servicios Desplegados
+
+| Servicio | Tecnología | Puerto | URL/Acceso |
+|----------|-----------|--------|------------|
+| Web + Login | Nginx | 80 | http://192.168.1.12 |
+| API Backend | Node.js/Express | 3000 | http://192.168.1.12:3000 |
+| Base de Datos | PostgreSQL 16 | 5432 | nutresadb / nutresa |
+| Archivos | Samba | 445 | \\192.168.1.12\NutresaShare |
+| Acceso Remoto | SSH | 22 | ssh nutresa@192.168.1.12 |
+
+## 💾 Almacenamiento
+```
+/dev/sdb (10GB) ──┐
+├── /dev/md0 (RAID 1) ── vg-nutresa ── lv-docker (8GB) ── /datos
+/dev/sdc (10GB) ──┘
+```
+## 🔐 Credenciales de Prueba
+
+| Usuario | Contraseña | Rol |
+|---------|-----------|-----|
+| admin | admin2026 | admin |
+| juan.perez | pass123 | user |
+| maria.lopez | pass456 | user |
+
+## 📋 Estado de Implementación
+
+- [x] Diseño de red (VLANs + Packet Tracer)
+- [x] Virtualización (Ubuntu Server 26.04 en VirtualBox)
+- [x] RAID 1 + LVM
+- [x] Docker + Docker Compose
+- [x] Nginx + Backend Node.js + PostgreSQL
+- [x] Samba
+- [ ] NTP (chrony)
+- [ ] Firewall (ufw)
+- [ ] Scripts Bash
+- [ ] Monitoreo

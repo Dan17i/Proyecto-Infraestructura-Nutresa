@@ -1,0 +1,32 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nutresa-web
+    ports:
+      - "80:80"
+    volumes:
+      - /datos/nginx/html:/usr/share/nginx/html
+      - /datos/nginx/conf:/etc/nginx/conf.d
+    restart: always
+
+  postgres:
+    image: postgres:16
+    container_name: nutresa-db
+    environment:
+      POSTGRES_DB: nutresadb
+      POSTGRES_USER: nutresa
+      POSTGRES_PASSWORD: Nutresa2026
+    volumes:
+      - /datos/postgres/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  backend:
+    build: /datos/backend
+    container_name: nutresa-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: always
