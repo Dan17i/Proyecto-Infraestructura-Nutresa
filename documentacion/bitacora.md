@@ -19,7 +19,7 @@
 3. **Hito Técnico:** Configuración de redundancia de datos mediante RAID 1 + LVM.
 
 ### Evidencias:
-![topologia_logica_v1.jpeg](../diseno_red/topologia_logica_v1.jpeg)
+![topologia_logica_completa.png](../diseno_red/topologia_logica_completa.png)
 
 ## [2026-05-12] - Fase 1: Virtualización y Aprovisionamiento Base
 **Estado:** Entorno de servidor base desplegado y listo para administración remota.
