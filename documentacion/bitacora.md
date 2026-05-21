@@ -233,3 +233,105 @@ Cliente (Browser)
 - **Snapshot fase3**
   VirtualBox mostrando snapshot `fase3-docker-servicios-configurados` en la cadena de instantáneas.
   ![21_snapshot.png](Imagenes/21_snapshot.png)
+---------------------------------------------------
+## [2026-05-18] - Fase 4: Seguridad, Automatización y Monitoreo
+**Estado:** Firewall configurado, scripts Bash operativos, monitoreo validado.
+
+### Actividades Realizadas:
+- Instalación y configuración de **chrony** para sincronización NTP con servidor `ntp-nts-2.ps5.canonical.com` (Stratum 3, offset ~18ms).
+- Activación y configuración de **ufw** (firewall) con reglas por servicio:
+  - Puerto 22 → SSH
+  - Puerto 80 → Nginx (Web)
+  - Puerto 3000 → Backend Node.js
+  - Puerto 5432 → PostgreSQL
+  - Puerto 445 → Samba
+- Aplicación de permisos especiales en `/datos`:
+  - **Sticky bit** (`1777`) en `/datos/samba/share` → evita que usuarios eliminen archivos ajenos.
+  - **SETGID** (`g+s`) en `/datos/nginx/html` → archivos heredan grupo del directorio.
+  - **SETGID** (`g+s`) en `/datos/postgres/data` → consistencia de grupo en datos de BD.
+  - **SETUID** (`u+s`) en `/datos/scripts/backup.sh` → script ejecuta con privilegios del propietario.
+- Creación de tres scripts Bash en `/datos/scripts/`:
+  - `backup.sh` → dump PostgreSQL + tar de Samba y Nginx + limpieza de backups >7 días.
+  - `monitoreo.sh` → CPU/RAM, disco, RAID, estado contenedores, Samba y últimos accesos DB.
+  - `deploy.sh` → down, pull, up --build de todos los contenedores Docker.
+- Ejecución y verificación de los tres scripts sin errores.
+- Revisión de logs con `journalctl -u docker` y monitoreo en tiempo real con `htop`.
+
+### Decisiones Técnicas:
+- **ufw sobre iptables directo:** ufw es la herramienta recomendada en Ubuntu y cumple el requisito explícito del enunciado. Internamente gestiona iptables, sin necesidad de configuración manual de cadenas.
+- **Sticky bit en Samba:** Al ser una carpeta compartida multiusuario, el sticky bit previene borrados accidentales o maliciosos de archivos de otros usuarios.
+- **SETGID en directorios de servicios:** Garantiza que archivos creados por Docker dentro de `html` y `data` hereden el grupo `nutresa`, facilitando la administración sin sudo.
+- **Backups con retención de 7 días:** `find -mtime +7 -delete` automatiza la limpieza, evitando saturación del volumen lógico `lv-docker`.
+- **Monitoreo integrado en script:** Consolida en una sola ejecución los indicadores clave del sistema, incluyendo auditoría de accesos desde la base de datos.
+
+### Resumen de Permisos Aplicados:
+```
+/datos/samba/share    drwxrwxrwt  (sticky bit)
+/datos/nginx/html     drwxr-sr-x  (SETGID)
+/datos/postgres/data  drwxr-sr-x  (SETGID)
+/datos/scripts/backup.sh  -rwsrwxr-x  (SETUID)
+```
+
+### Resumen de Reglas Firewall (ufw):
+```
+Puerto  Protocolo  Acción   Servicio
+22      TCP        ALLOW    SSH
+80      TCP        ALLOW    Nginx Web
+3000    TCP        ALLOW    Backend API
+5432    TCP        ALLOW    PostgreSQL
+445     TCP        ALLOW    Samba
+```
+
+### Estado General del Proyecto:
+- [x] Diseño de red (VLANs + Packet Tracer)
+- [x] Virtualización (Ubuntu Server 26.04 en VirtualBox)
+- [x] RAID 1 + LVM
+- [x] Docker + Docker Compose
+- [x] Nginx + Backend Node.js + PostgreSQL
+- [x] Samba
+- [x] NTP (chrony)
+- [x] Firewall (ufw)
+- [x] Permisos especiales (SETUID, SETGID, sticky bit)
+- [x] Scripts Bash (backup, monitoreo, despliegue)
+- [x] Monitoreo (htop, journalctl)
+- [ ] Alta disponibilidad (documentación)
+
+### Próximos Pasos:
+1. Documentar estrategia de alta disponibilidad y recuperación ante fallos.
+2. Toma de snapshot `fase4-seguridad-scripts-monitoreo`.
+3. Commit final al repositorio Git.
+4. Preparar video demo y sustentación.
+
+### Evidencias:
+- **NTP sincronizado**
+  Salida de `chronyc tracking` mostrando Reference ID, Stratum 3 y offset mínimo.
+  ![22_chrony_tracking.png](Imagenes/22_chrony_tracking.png)
+
+- **Firewall activo**
+  Salida de `sudo ufw status` mostrando puertos 22, 80, 3000, 5432 y 445 en ALLOW.
+  ![23_ufw_status.png](Imagenes/23_ufw_status.png)
+  ![24_ufw_status2.png](Imagenes/24_ufw_status2.png)
+
+- **Permisos especiales**
+  Salida de `ls -la /datos/samba/` y `ls -la /datos/nginx/` mostrando sticky bit y SETGID.
+  ![25_permisos.png](Imagenes/25_permisos.png)
+
+- **Scripts Bash**
+  Salida de `ls -la /datos/scripts/` mostrando los 3 scripts con permisos de ejecución.
+  ![26_scrips.png](Imagenes/26_scrips.png)
+
+- **Backup ejecutado**
+  Salida de `bash backup.sh` confirmando dump de BD, compresión de archivos y limpieza.
+  ![27_bockup.png](Imagenes/27_bockup.png)
+
+- **Monitoreo ejecutado**
+  Salida completa de `bash monitoreo.sh` con CPU, RAM, RAID [UU], contenedores UP y logs DB.
+  ![28_monitoreo.png](Imagenes/28_monitoreo.png)
+
+- **htop**
+  Vista de htop mostrando procesos activos: mdadm, chronyd, sshd, Docker y sistema estable.
+  ![29_htop.png](Imagenes/29_htop.png)
+
+- **journalctl Docker**
+  Logs de Docker mostrando inicio de contenedores y actividad reciente sin errores críticos.
+  ![30_journalctl.png](Imagenes/30_journalctl.png)
